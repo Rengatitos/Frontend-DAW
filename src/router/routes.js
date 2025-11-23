@@ -29,8 +29,7 @@ const routes = [
     component: () => import('src/pages/ForgotPasswordPage.vue'),
   },
 
-  // Always leave this as last one,
-  // but you can also remove it
+  // Error 404
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
