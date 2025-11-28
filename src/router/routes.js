@@ -40,11 +40,14 @@ const routes = [
         component: () => import('src/pages/AdminDashboardPage.vue'),
       },
     ],
+  },
+
+  {
     path: '/forgot-password',
     component: () => import('src/pages/ForgotPasswordPage.vue'),
   },
 
-  // Admin area wrapped by AdminLayout and protected by a route guard (meta.requiresAdmin)
+  // Admin area wrapped by AdminLayout and protected by a route guard
   {
     path: '/admin',
     component: () => import('src/layouts/AdminLayout.vue'),
