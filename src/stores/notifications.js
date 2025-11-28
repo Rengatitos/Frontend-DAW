@@ -18,24 +18,26 @@ export const useNotificationsStore = defineStore('notifications', {
     async fetchNotifications() {
       this.loading = true
       try {
-        // Obtener tareas del usuario
-        const response = await api.get('Tarea')
+        // Obtener actividades del usuario
+        const response = await api.get('Actividad')
 
-        // Mapear tareas como notificaciones
+        // Mapear actividades como notificaciones
         const data = Array.isArray(response.data) ? response.data : response.data.data || []
-        this.notifications = data.map((tarea) => ({
-          id: tarea._id || tarea.id,
-          titulo: tarea.nombre || tarea.name || 'Sin título',
-          descripcion: tarea.descripcion || tarea.description || 'Tarea pendiente',
-          fechaLimite: tarea.fechaLimite || tarea.dueDate || '',
-          estado: (tarea.estado || tarea.status) === 'Completada' ? 'completada' : 'pendiente',
-          completed: (tarea.estado || tarea.status) === 'Completada' || tarea.completed === true,
+        this.notifications = data.map((actividad) => ({
+          id: actividad._id || actividad.id,
+          titulo: actividad.nombre || actividad.name || 'Sin título',
+          descripcion: actividad.descripcion || actividad.description || 'Actividad pendiente',
+          fechaLimite: actividad.fechaLimite || actividad.dueDate || '',
+          estado:
+            (actividad.estado || actividad.status) === 'Completada' ? 'completada' : 'pendiente',
+          completed:
+            (actividad.estado || actividad.status) === 'Completada' || actividad.completed === true,
           leida: false,
-          prioridad: tarea.prioridad || tarea.priority || 'media',
+          prioridad: actividad.prioridad || actividad.priority || 'media',
         }))
       } catch (error) {
         console.error('Error fetching tasks as notifications:', error)
-        // Usar tareas vacías si hay error
+        // Usar actividades vacías si hay error
         this.notifications = []
       } finally {
         this.loading = false
