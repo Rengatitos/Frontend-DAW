@@ -18,24 +18,26 @@ export const useNotificationsStore = defineStore('notifications', {
     async fetchNotifications() {
       this.loading = true
       try {
-        // Obtener actividades en lugar de la ruta obsoleta /Tarea
+        // Obtener actividades del usuario
         const response = await api.get('Actividad')
 
         // Mapear actividades como notificaciones
         const data = Array.isArray(response.data) ? response.data : response.data.data || []
-        this.notifications = data.map((act) => ({
-          id: act.id || act._id || null,
-          titulo: act.titulo || act.nombre || 'Sin título',
-          descripcion: act.descripcion || act.description || 'Actividad pendiente',
-          fechaLimite: act.fechaFin || act.fechaFin || '',
-          estado: act.estado || 'Pendiente',
-          completed: typeof act.estado === 'string' && act.estado.toLowerCase().includes('complet'),
+        this.notifications = data.map((actividad) => ({
+          id: actividad._id || actividad.id,
+          titulo: actividad.nombre || actividad.name || 'Sin título',
+          descripcion: actividad.descripcion || actividad.description || 'Actividad pendiente',
+          fechaLimite: actividad.fechaLimite || actividad.dueDate || '',
+          estado:
+            (actividad.estado || actividad.status) === 'Completada' ? 'completada' : 'pendiente',
+          completed:
+            (actividad.estado || actividad.status) === 'Completada' || actividad.completed === true,
           leida: false,
-          prioridad: act.tipo || 'media',
+          prioridad: actividad.prioridad || actividad.priority || 'media',
         }))
       } catch (error) {
-        console.error('Error fetching activities as notifications:', error)
-        // Usar lista vacía si hay error
+        console.error('Error fetching tasks as notifications:', error)
+        // Usar actividades vacías si hay error
         this.notifications = []
       } finally {
         this.loading = false
