@@ -40,7 +40,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import ChatBubble from 'src/components/ChatBubble.vue'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
+
+const ROLE_ID_ADMIN_FALLBACK = '6913adbcca79acfd93858d5c'
 
 const supervisor = ref({
   nombre: 'Supervisor',
@@ -62,25 +64,48 @@ const loadSupervisor = async () => {
       return
     }
 
-    // Usar el mismo endpoint que el DashboardPage
-    const supervisorRes = await axios.get(
-      'https://backend-daw.onrender.com/api/Usuario/supervisor',
-      { headers: { Authorization: `Bearer ${token}` } },
-    )
+    // Try supervisor endpoint; if it fails, fallback to role-based admin list
+    try {
+      const supervisorRes = await api.get('Usuario/supervisor')
 
-    if (supervisorRes.data) {
-      const s = supervisorRes.data
-      supervisor.value = {
-        nombre: s.nombre || 'Supervisor',
-        cargo: s.cargo || 'RRHH',
-        email: s.correo || s.email || '',
-        telefono: s.telefono || '',
-        iniciales: (s.nombre || 'S')
-          .split(' ')
-          .map((n) => n[0])
-          .join('')
-          .substring(0, 2)
-          .toUpperCase(),
+      if (supervisorRes.data) {
+        const s = supervisorRes.data
+        supervisor.value = {
+          nombre: s.nombre || 'Supervisor',
+          cargo: s.cargo || 'RRHH',
+          email: s.correo || s.email || '',
+          telefono: s.telefono || '',
+          iniciales: (s.nombre || 'S')
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase(),
+        }
+        return
+      }
+    } catch {
+      // fallback: fetch first admin from role list
+      try {
+        const adminsRes = await api.get(`Usuario/rol/${ROLE_ID_ADMIN_FALLBACK}`)
+        const admins = Array.isArray(adminsRes.data) ? adminsRes.data : adminsRes.data?.data || []
+        if (admins.length > 0) {
+          const s = admins[0]
+          supervisor.value = {
+            nombre: s.nombre || 'Supervisor',
+            cargo: s.cargo || 'RRHH',
+            email: s.correo || s.email || '',
+            telefono: s.telefono || '',
+            iniciales: (s.nombre || 'S')
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .substring(0, 2)
+              .toUpperCase(),
+          }
+        }
+      } catch (err2) {
+        console.error('Error cargando supervisor (fallback):', err2)
       }
     }
   } catch (error) {

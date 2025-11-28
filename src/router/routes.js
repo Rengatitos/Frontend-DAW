@@ -40,6 +40,9 @@ const routes = [
         component: () => import('src/pages/AdminDashboardPage.vue'),
       },
     ],
+  },
+
+  {
     path: '/forgot-password',
     component: () => import('src/pages/ForgotPasswordPage.vue'),
   },
@@ -159,6 +162,11 @@ const routes = [
     ],
   },
 
+  // Error 403
+  {
+    path: '/forbidden',
+    component: () => import('src/pages/ErrorForbidden.vue'),
+  },
   // Error 404
   {
     path: '/:catchAll(.*)*',

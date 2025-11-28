@@ -130,7 +130,10 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useNotificationsStore } from 'src/stores/notifications'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
+
+// Fallback admin role id used to fetch admin users when supervisor endpoint is not available
+const ROLE_ID_ADMIN_FALLBACK = '6913adbcca79acfd93858d5c'
 
 export default {
   name: 'DashboardPage',
@@ -171,12 +174,8 @@ export default {
         // Cargar supervisor si existe
         if (token) {
           try {
-            const supervisorRes = await axios.get(
-              'https://backend-daw.onrender.com/api/Usuario/supervisor',
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              },
-            )
+            // Try original supervisor endpoint
+            const supervisorRes = await api.get('Usuario/supervisor')
             if (supervisorRes.data) {
               supervisorInfo.value = {
                 nombre: supervisorRes.data.nombre || supervisorInfo.value.nombre,
@@ -185,15 +184,47 @@ export default {
                 telefono: supervisorRes.data.telefono || supervisorInfo.value.telefono,
               }
             }
-          } catch (err) {
-            console.warn('No se pudo cargar el supervisor:', err)
+          } catch {
+            // If supervisor endpoint doesn't exist, fallback to: if user has supervisorId fetch by id,
+            // otherwise fetch admins list via role endpoint and pick the first admin as supervisor
+            try {
+              const userStorage = localStorage.getItem('user')
+              let currentUser = null
+              if (userStorage) currentUser = JSON.parse(userStorage)
+
+              if (currentUser && (currentUser.supervisorId || currentUser.supervisor)) {
+                const supId = currentUser.supervisorId || currentUser.supervisor
+                const supRes = await api.get(`Usuario/${supId}`)
+                if (supRes.data) {
+                  supervisorInfo.value = {
+                    nombre: supRes.data.nombre || supervisorInfo.value.nombre,
+                    cargo: supRes.data.cargo || supervisorInfo.value.cargo,
+                    email: supRes.data.correo || supervisorInfo.value.email,
+                    telefono: supRes.data.telefono || supervisorInfo.value.telefono,
+                  }
+                }
+              } else {
+                // fetch admins list by role id
+                const adminsRes = await api.get(`Usuario/rol/${ROLE_ID_ADMIN_FALLBACK}`)
+                const admins = Array.isArray(adminsRes.data) ? adminsRes.data : adminsRes.data?.data || []
+                if (admins.length > 0) {
+                  const a = admins[0]
+                  supervisorInfo.value = {
+                    nombre: a.nombre || supervisorInfo.value.nombre,
+                    cargo: a.cargo || supervisorInfo.value.cargo,
+                    email: a.correo || supervisorInfo.value.email,
+                    telefono: a.telefono || supervisorInfo.value.telefono,
+                  }
+                }
+              }
+            } catch (innerErr) {
+              console.warn('No se pudo cargar el supervisor (fallback):', innerErr)
+            }
           }
 
           // Cargar tareas del usuario
           try {
-            const tasksRes = await axios.get('https://backend-daw.onrender.com/api/Tarea', {
-              headers: { Authorization: `Bearer ${token}` },
-            })
+            const tasksRes = await api.get('Tarea')
             if (tasksRes.data) {
               const taskList = Array.isArray(tasksRes.data)
                 ? tasksRes.data

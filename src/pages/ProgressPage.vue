@@ -141,7 +141,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useNotificationsStore } from 'src/stores/notifications'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 export default {
   name: 'ProgressPage',
@@ -175,9 +175,7 @@ export default {
 
         if (token) {
           try {
-            const tasksRes = await axios.get('https://backend-daw.onrender.com/api/Tarea', {
-              headers: { Authorization: `Bearer ${token}` },
-            })
+            const tasksRes = await api.get('Tarea')
             if (tasksRes.data) {
               const taskList = Array.isArray(tasksRes.data)
                 ? tasksRes.data

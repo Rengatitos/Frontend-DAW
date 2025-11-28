@@ -88,7 +88,7 @@
 import { useQuasar } from 'quasar'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from 'src/stores/auth'
+import { useAuthStore, ADMIN_ROLE_ID } from 'src/stores/auth'
 
 export default {
   name: 'LoginPage',
@@ -114,10 +114,10 @@ export default {
           return
         }
 
-        $q.notify({ type: 'positive', message: `Bienvenido ${auth.user?.name || auth.user?.email || ''}` })
+        $q.notify({ type: 'positive', message: `Bienvenido ${auth.user?.nombre || auth.user?.name || auth.user?.email || ''}` })
 
-        // redirect based on role (expecting exact 'Administrador')
-        if (auth.role === 'Administrador') {
+        // redirect based on roleId (prefer id matching)
+        if (auth.roleId === ADMIN_ROLE_ID || auth.role === 'Administrador') {
           router.push('/admin/dashboard')
         } else {
           router.push('/dashboard')

@@ -5,14 +5,15 @@
         <div class="text-h6">Empleados</div>
       </div>
       <div class="col-auto row items-center q-gutter-sm">
-        <q-input dense outlined v-model="search" placeholder="Buscar empleado..." />
-        <q-select dense outlined v-model="department" :options="deptOptions" placeholder="Departamento" clearable />
-        <q-select dense outlined v-model="statusFilter" :options="statusOptions" placeholder="Estado" clearable />
+          <q-input dense outlined v-model="search" placeholder="Buscar empleado..." />
+          <q-select dense outlined v-model="department" :options="deptOptions" placeholder="Departamento" clearable />
+          <q-select dense outlined v-model="statusFilter" :options="statusOptions" placeholder="Estado" clearable />
+          <q-btn v-permission="'Administrador'" color="primary" label="Crear empleado" @click="openCreate" />
       </div>
     </div>
 
     <q-card class="q-pa-md bg-white shadow-2 rounded-borders">
-      <q-table :columns="columns" :rows="filteredRows" row-key="id" flat bordered>
+        <q-table :columns="columns" :rows="filteredRows" row-key="id" flat bordered>
         <template v-slot:body-cell-onboarding="props">
           <q-td :props="props">
             <q-chip dense :color="props.row.onboarding === 'Completado' ? 'green' : 'orange'" text-color="white">
@@ -20,6 +21,12 @@
             </q-chip>
           </q-td>
         </template>
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props">
+              <q-btn dense flat icon="edit" v-permission="'Administrador'" @click="editRow(props.row)" />
+              <q-btn dense flat icon="delete" v-permission="'Administrador'" color="negative" @click="deleteRow(props.row)" />
+            </q-td>
+          </template>
       </q-table>
     </q-card>
   </q-page>
@@ -56,6 +63,19 @@ const filteredRows = computed(() => {
     return true
   })
 })
+
+function openCreate() {
+  // placeholder: open dialog or navigate to create page
+  console.log('Crear empleado (solo Admin)')
+}
+
+function editRow(row) {
+  console.log('Editar', row)
+}
+
+function deleteRow(row) {
+  console.log('Eliminar', row)
+}
 </script>
 
 <style scoped>
