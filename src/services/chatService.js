@@ -21,3 +21,11 @@ const guardarInteracciones = async (payload) => {
 }
 
 export default { getSala, crearSala, enviarMensaje, guardarInteracciones }
+
+// Optional: fetch reduced historial if backend supports it
+const getHistorialReducido = async (usuarioRef) => {
+  const resp = await api.get(`InteraccionChat/reducido/${usuarioRef}`)
+  return resp.data
+}
+
+export { getHistorialReducido }
