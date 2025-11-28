@@ -88,7 +88,7 @@ import SuggestedQuestions from 'src/components/SuggestedQuestions.vue'
 import ChatInput from 'src/components/ChatInput.vue'
 import NextStepsPanel from 'src/components/NextStepsPanel.vue'
 import { useUIStore } from 'src/stores/ui'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 const messages = ref([])
 const ui = useUIStore()
@@ -107,10 +107,7 @@ const loadApiData = async () => {
     // Cargar supervisor
     if (currentUser.supervisorId) {
       try {
-        const supervisorRes = await axios.get(
-          `https://backend-daw.onrender.com/api/Usuario/${currentUser.supervisorId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        )
+          const supervisorRes = await api.get(`Usuario/${currentUser.supervisorId}`)
         supervisor.value = supervisorRes.data
       } catch {
         console.warn('No se pudo cargar el supervisor')
@@ -119,9 +116,7 @@ const loadApiData = async () => {
 
     // Cargar enlaces
     try {
-      const linksRes = await axios.get('https://backend-daw.onrender.com/api/Enlace', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+        const linksRes = await api.get('Enlace')
       const data = Array.isArray(linksRes.data) ? linksRes.data : linksRes.data.data || []
       links.value = data.map((link) => ({
         title: link.nombre || link.title || 'Sin título',

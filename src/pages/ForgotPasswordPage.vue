@@ -66,7 +66,7 @@
 <script>
 import { useQuasar } from 'quasar'
 import { ref } from 'vue'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 export default {
   name: 'ForgotPasswordPage',
@@ -86,7 +86,7 @@ export default {
         // ----------------------------------------------------------
 
         // 1. Traemos todos los usuarios
-        const response = await axios.get('https://backend-daw.onrender.com/api/Usuario')
+        const response = await api.get('Usuario')
         const users = Array.isArray(response.data) ? response.data : response.data.users || []
 
         // 2. Buscamos si el correo existe

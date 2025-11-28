@@ -117,7 +117,7 @@
 import { ref, onMounted } from 'vue'
 import ChatBubble from 'src/components/ChatBubble.vue'
 import { useQuasar } from 'quasar'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 const $q = useQuasar()
 const userName = ref('Usuario')
@@ -176,11 +176,7 @@ function openChangePassword() {
   })
     .onOk(async (password) => {
       try {
-        const response = await axios.post(
-          'https://backend-daw.onrender.com/api/Usuario/cambiar-contrasena',
-          { nuevaContrasena: password },
-          { headers: { Authorization: `Bearer ${token}` } },
-        )
+        const response = await api.post('Usuario/cambiar-contrasena', { nuevaContrasena: password })
         console.log('Respuesta:', response)
 
         $q.notify({
@@ -223,11 +219,7 @@ function openEditProfile() {
           return
         }
 
-        const response = await axios.put(
-          'https://backend-daw.onrender.com/api/Usuario',
-          { nombre: newName },
-          { headers: { Authorization: `Bearer ${token}` } },
-        )
+        const response = await api.put('Usuario', { nombre: newName })
         console.log('Respuesta:', response)
 
         $q.notify({
@@ -259,13 +251,7 @@ async function saveNotificationSettings() {
   }
 
   try {
-    await axios.post(
-      'https://backend-daw.onrender.com/api/Usuario/preferencias',
-      notificationSettings.value,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    )
+    await api.post('Usuario/preferencias', notificationSettings.value)
 
     $q.notify({
       type: 'positive',
@@ -291,10 +277,8 @@ function openPrivacyPolicy() {
     }
 
     // Intentar obtener política de privacidad desde la API
-    axios
-      .get('https://backend-daw.onrender.com/api/Enlace', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    api
+      .get('Enlace')
       .then((response) => {
         const links = Array.isArray(response.data) ? response.data : response.data.data || []
         const privacyLink = links.find((l) => l.nombre?.toLowerCase().includes('privacidad'))
@@ -331,10 +315,8 @@ function openTermsOfService() {
     }
 
     // Intentar obtener términos desde la API
-    axios
-      .get('https://backend-daw.onrender.com/api/Enlace', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    api
+      .get('Enlace')
       .then((response) => {
         const links = Array.isArray(response.data) ? response.data : response.data.data || []
         const termsLink = links.find(
@@ -374,9 +356,7 @@ async function openSecuritySettings() {
   }
 
   try {
-    const response = await axios.get('https://backend-daw.onrender.com/api/Usuario', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const response = await api.get('Usuario')
 
     const lastLogin = response.data.ultimaSesion || new Date().toLocaleDateString('es-ES')
 

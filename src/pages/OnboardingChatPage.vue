@@ -66,16 +66,13 @@ import NavBar from 'src/components/NavBar.vue'
 import ChatBubble from 'src/components/ChatBubble.vue'
 import ChatInput from 'src/components/ChatInput.vue'
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 const cards = ref([])
 
 const loadLinks = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const response = await axios.get('https://backend-daw.onrender.com/api/Enlace', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const response = await api.get('Enlace')
 
     const data = Array.isArray(response.data) ? response.data : response.data.data || []
     cards.value = data.map((link) => ({

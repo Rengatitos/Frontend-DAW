@@ -158,7 +158,7 @@
 import { ref, computed, onMounted } from 'vue'
 import ChatBubble from 'src/components/ChatBubble.vue'
 import { useQuasar } from 'quasar'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 const $q = useQuasar()
 const searchQuery = ref('')
@@ -267,9 +267,7 @@ const loadHelpResources = async () => {
     if (token) {
       try {
         // Cargar enlaces útiles desde la API
-        const response = await axios.get('https://backend-daw.onrender.com/api/Enlace', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await api.get('Enlace')
 
         const data = Array.isArray(response.data) ? response.data : response.data.data || []
         helpLinks.value = data.map((link) => ({

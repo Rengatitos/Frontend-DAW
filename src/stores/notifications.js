@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { api } from 'src/boot/axios'
 
 export const useNotificationsStore = defineStore('notifications', {
   state: () => ({
@@ -18,14 +18,8 @@ export const useNotificationsStore = defineStore('notifications', {
     async fetchNotifications() {
       this.loading = true
       try {
-        const token = localStorage.getItem('token')
-
         // Obtener tareas del usuario
-        const response = await axios.get('https://backend-daw.onrender.com/api/Tarea', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const response = await api.get('Tarea')
 
         // Mapear tareas como notificaciones
         const data = Array.isArray(response.data) ? response.data : response.data.data || []
