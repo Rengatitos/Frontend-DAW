@@ -86,7 +86,7 @@
 
 <script>
 import { useQuasar } from 'quasar'
-import { ref } from 'vue'
+import { ref, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore, ADMIN_ROLE_ID } from 'src/stores/auth'
 
@@ -104,23 +104,91 @@ export default {
 
     const auth = useAuthStore()
 
+    // FUNCIÓN AUXILIAR: Convierte el objeto raro {timestamp, machine...} a String Hexadecimal
+    const reconstruirIdMongo = (obj) => {
+      if (!obj) return null
+      if (typeof obj === 'string') return obj // Ya es string
+
+      // Si tiene la estructura que vimos en tu consola
+      if (
+        obj.timestamp !== undefined &&
+        obj.machine !== undefined &&
+        obj.pid !== undefined &&
+        obj.increment !== undefined
+      ) {
+        const toHex = (num, padding) => num.toString(16).padStart(padding, '0')
+        // La fórmula de MongoDB ObjectId: 8 chars time + 6 chars machine + 4 chars pid + 6 chars inc
+        return (
+          toHex(obj.timestamp, 8) +
+          toHex(obj.machine, 6) +
+          toHex(obj.pid, 4) +
+          toHex(obj.increment, 6)
+        ).toLowerCase()
+      }
+      return null
+    }
+
     const handleLogin = async () => {
       loading.value = true
       try {
         const payload = { email: email.value, correo: email.value, password: password.value }
+
         const res = await auth.login(payload)
-        if (!res.ok) {
+        console.log('Respuesta Login:', res)
+
+        if (!res || res.ok === false) {
           $q.notify({ type: 'negative', message: 'Credenciales incorrectas' })
           return
         }
 
-        $q.notify({ type: 'positive', message: `Bienvenido ${auth.user?.nombre || auth.user?.name || auth.user?.email || ''}` })
+        // 1. Obtener objeto usuario
+        let rawUser = res.usuario || (auth.user ? toRaw(auth.user) : null)
+        if (rawUser) {
+          rawUser = JSON.parse(JSON.stringify(rawUser)) // Limpieza de Proxy
+        }
 
-        // redirect based on roleId (prefer id matching)
+        if (!rawUser) {
+          $q.notify({ type: 'negative', message: 'Error: Datos de usuario vacíos' })
+          return
+        }
+
+        console.log('Analizando ID del usuario...', rawUser.id)
+
+        // 2. CONVERSIÓN DE ID (Aquí solucionamos tu error)
+        let finalId = reconstruirIdMongo(rawUser.id)
+
+        // Fallbacks por si acaso
+        if (!finalId) finalId = rawUser._id || rawUser.userId
+
+        // Validación final
+        if (!finalId || typeof finalId !== 'string' || finalId.includes('object')) {
+          console.error('NO SE PUDO RECONSTRUIR EL ID:', rawUser.id)
+          $q.notify({ type: 'negative', message: 'Error técnico: Formato de ID desconocido' })
+          return
+        }
+
+        console.log('ID RECONSTRUIDO EXITOSAMENTE:', finalId)
+
+        // 3. Guardar
+        localStorage.setItem('usuarioId', finalId)
+
+        // Guardamos el usuario pero le "parchamos" el ID corregido para que no falle luego
+        rawUser.id = finalId
+        localStorage.setItem('userData', JSON.stringify(rawUser))
+
+        if (res.token || auth.token) {
+          localStorage.setItem('token', res.token || auth.token)
+        }
+
+        $q.notify({
+          type: 'positive',
+          message: `Bienvenido ${rawUser.nombre || ''}`,
+        })
+
         if (auth.roleId === ADMIN_ROLE_ID || auth.role === 'Administrador') {
           router.push('/admin/dashboard')
         } else {
-          router.push('/dashboard')
+          router.push('/next-steps')
         }
       } catch (error) {
         console.error(error)

@@ -13,8 +13,8 @@
       v-model="store.abierta"
       side="right"
       overlay
-      behavior="overlay"
-      width="350px"
+      :width="350"
+      behavior="desktop"
       bordered
       class="bg-grey-1"
     >

@@ -1,11 +1,16 @@
 <template>
-  <q-layout view="lHh Lpr lFf" style="--admin-primary: #30B0C4">
+  <q-layout view="lHh Lpr lFf" style="--admin-primary: #30b0c4">
     <!-- QHeader -->
     <q-header elevated class="bg-white q-px-md">
-      <div class="row items-center justify-between q-gutter-sm" style="height:64px">
+      <div class="row items-center justify-between q-gutter-sm" style="height: 64px">
         <div class="text-h6" :style="{ color: 'var(--admin-primary)' }">Administración RRHH</div>
         <div class="row items-center">
-          <q-avatar square size="36px" class="q-mr-sm" :style="{ background: 'var(--admin-primary)', color: 'white' }">
+          <q-avatar
+            square
+            size="36px"
+            class="q-mr-sm"
+            :style="{ background: 'var(--admin-primary)', color: 'white' }"
+          >
             <q-icon name="person" />
           </q-avatar>
           <div class="text-caption q-mr-md">{{ displayName }}</div>
@@ -16,9 +21,18 @@
 
     <!-- QDrawer (persistent) -->
     <!-- NOTE: Este Layout debe estar protegido por un route guard de administrador -->
-    <q-drawer show-if-above bordered v-model="open" side="left" width="280" content-class="admin-drawer">
+    <q-drawer
+      show-if-above
+      bordered
+      v-model="open"
+      side="left"
+      :width="280"
+      content-class="admin-drawer"
+    >
       <div class="q-pa-md">
-        <div class="text-subtitle2 q-mb-md" :style="{ color: 'var(--admin-primary)' }">Panel Admin</div>
+        <div class="text-subtitle2 q-mb-md" :style="{ color: 'var(--admin-primary)' }">
+          Panel Admin
+        </div>
         <q-list>
           <q-item clickable v-ripple to="/admin/dashboard">
             <q-item-section avatar>
@@ -88,8 +102,20 @@ function handleLogout() {
 </script>
 
 <style scoped>
-.q-header { border-bottom: 1px solid rgba(0,0,0,0.05); }
-.admin-drawer { background: #ffffff; }
-.menu-avatar { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; background: var(--admin-primary); color: #fff }
-
+.q-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.admin-drawer {
+  background: #ffffff;
+}
+.menu-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-primary);
+  color: #fff;
+}
 </style>
