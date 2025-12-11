@@ -155,7 +155,10 @@ export default {
       const emailLike = /\S+@\S+\.\S+/.test(emailVal)
       if (!emailLike) {
         // backend accepts 'correo' or other identifiers; warn but still allow
-        $q.notify({ type: 'warning', message: 'El correo parece inválido, se intentará de todas formas' })
+        $q.notify({
+          type: 'warning',
+          message: 'El correo parece inválido, se intentará de todas formas',
+        })
       }
 
       loading.value = true
@@ -165,7 +168,11 @@ export default {
         const res = await auth.login(payload)
         console.log('Respuesta Login:', res)
         // Guarda SIEMPRE el response body completo para consumo del chatbot
-        try { localStorage.setItem('loginResponse', JSON.stringify(res)) } catch { /* ignore */ }
+        try {
+          localStorage.setItem('loginResponse', JSON.stringify(res))
+        } catch {
+          /* ignore */
+        }
 
         if (!res || res.ok === false) {
           $q.notify({ type: 'negative', message: 'Credenciales incorrectas' })
@@ -205,7 +212,11 @@ export default {
         // 3. Guardar — claves que el chatbot usa
         localStorage.setItem('usuarioId', finalId)
         rawUser.id = finalId
-        try { localStorage.setItem('user', JSON.stringify(rawUser)) } catch { /* ignore */ }
+        try {
+          localStorage.setItem('user', JSON.stringify(rawUser))
+        } catch {
+          /* ignore */
+        }
 
         const finalToken = res.token || auth.token
         if (finalToken) {
@@ -217,8 +228,23 @@ export default {
           message: `Bienvenido ${rawUser.nombre || ''}`,
         })
 
-        // Redirigir SIEMPRE al Dashboard tras iniciar sesión
-        router.push('/dashboard')
+        // Si el usuario es administrador, abrir panel admin; si no, ir al dashboard normal
+        // Evitamos depender únicamente de localStorage y preferimos el estado del store
+        try {
+          const isAdmin =
+            auth.isAdmin ||
+            localStorage.getItem('role') === 'Administrador' ||
+            localStorage.getItem('roleId') === '6913adbcca79acfd93858d5c'
+          if (isAdmin) {
+            // Redirigir al área admin
+            router.push('/admin')
+          } else {
+            router.push('/dashboard')
+          }
+        } catch {
+          // Fallback conservador
+          router.push('/dashboard')
+        }
       } catch (error) {
         console.error(error)
         $q.notify({ type: 'negative', message: 'Error al autenticar' })

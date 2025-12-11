@@ -52,7 +52,7 @@ export default defineRouter(function (/* { store, ssrContext } */) {
       return acc
     }, [])
 
-    const requiresAdmin = to.matched.some(record => record.meta && record.meta.requiresAdmin)
+    const requiresAdmin = to.matched.some((record) => record.meta && record.meta.requiresAdmin)
 
     // If no role-based restrictions, continue
     if (!requiresAdmin && requiredRoles.length === 0) {
@@ -64,6 +64,27 @@ export default defineRouter(function (/* { store, ssrContext } */) {
       const { useAuthStore, ADMIN_ROLE_ID } = require('src/stores/auth')
       const auth = useAuthStore()
 
+      // If the logged-in user is an admin, restrict navigation only to admin routes.
+      // This enforces the requirement that admins only access the admin interface.
+      try {
+        const isAdminUser =
+          auth.isAdmin === true || auth.role === 'Administrador' || auth.roleId === ADMIN_ROLE_ID
+        if (isAdminUser) {
+          const isAdminRoute =
+            to.matched.some((record) => record.meta && record.meta.requiresAdmin) ||
+            to.path.startsWith('/admin') ||
+            to.path.startsWith('/admindashboard') ||
+            to.path.startsWith('/admin-')
+          // Allow some public pages like logout/login/forbidden
+          const allowedPublic = ['/login', '/', '/forbidden']
+          if (!isAdminRoute && !allowedPublic.includes(to.path)) {
+            return next({ path: '/admin' })
+          }
+        }
+      } catch {
+        // swallow and continue with normal checks
+      }
+
       // Must be logged in for role-protected routes
       if (!auth.isLoggedIn) {
         return next({ path: '/login', query: { redirect: to.fullPath } })
@@ -71,7 +92,12 @@ export default defineRouter(function (/* { store, ssrContext } */) {
 
       // prefer roleId checks when available
       const roleName = auth.role || localStorage.getItem('role')
-      const roleId = auth.roleId || auth.user?.rol || auth.user?.rolRef || auth.user?.role?._id || localStorage.getItem('roleId')
+      const roleId =
+        auth.roleId ||
+        auth.user?.rol ||
+        auth.user?.rolRef ||
+        auth.user?.role?._id ||
+        localStorage.getItem('roleId')
 
       if (requiresAdmin) {
         const isAdminById = roleId === ADMIN_ROLE_ID
