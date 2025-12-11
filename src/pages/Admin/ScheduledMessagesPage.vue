@@ -210,7 +210,8 @@ export default {
         { name: 'actions', label: 'Acciones', align: 'center' },
       ],
       // Rol ID para obtener empleados (ajusta según tu backend)
-      rolRef: '69226322dc71d9cf2a963c58',
+      // Actualizado: rol de empleado proporcionado por el usuario
+      rolRef: '692284a99875b23f82fb7023',
     }
   },
   computed: {
